@@ -1,0 +1,20 @@
+# Python virtual environment
+.venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Environment variables
+.env
+
+# Uploaded media
+uploads/
+
+# Datasets
+dataset/
+
+# Machine learning model weights
+*.pth
+*.pt
+*.onnx
