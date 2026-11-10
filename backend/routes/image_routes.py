@@ -2,7 +2,7 @@ from fastapi import APIRouter, UploadFile, File, HTTPException
 from pathlib import Path
 from uuid import uuid4
 
-from backend.services.image_service import validate_image
+from backend.services.image_service import validate_image, preprocess_image
 
 
 router = APIRouter()
@@ -50,8 +50,15 @@ async def upload_image(file: UploadFile = File(...)):
             detail=result["message"]
         )
 
+    processed_image = preprocess_image(file_path)
+
     return {
-        "message": "Image uploaded successfully.",
-        "filename": filename,
-        "validation": result["message"]
+    "message": "Image uploaded successfully.",
+    "filename": filename,
+    "validation": result["message"],
+    "preprocessing": {
+        "width": processed_image.width,
+        "height": processed_image.height,
+        "colour_mode": processed_image.mode
     }
+}
