@@ -1,7 +1,8 @@
-
 from fastapi import FastAPI
 
-# Create our application
+from backend.routes.image_routes import router as image_router
+
+
 app = FastAPI(
     title="Deepfake Detection System",
     description="An AI-powered multimedia authenticity detection system.",
@@ -9,7 +10,6 @@ app = FastAPI(
 )
 
 
-# Homepage endpoint
 @app.get("/")
 def home():
     return {
@@ -18,10 +18,13 @@ def home():
     }
 
 
-# Health-check endpoint
 @app.get("/health")
 def health_check():
     return {
         "status": "healthy",
         "application": "Deepfake Detection System"
     }
+
+
+# Register image upload routes
+app.include_router(image_router)
