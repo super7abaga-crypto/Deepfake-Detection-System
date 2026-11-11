@@ -1,7 +1,9 @@
 
 from pathlib import Path
+import random
 
 import torch
+from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 
 from backend.services.image_service import (
@@ -12,9 +14,17 @@ from backend.services.image_service import (
 
 class DeepfakeImageDataset(Dataset):
 
-    def __init__(self, dataset_dir="dataset/splits", split="train"):
+    def __init__(
+        self,
+        dataset_dir="dataset/splits",
+        split="train",
+        augment=False
+    ):
 
         self.dataset_dir = Path(dataset_dir) / split
+
+        # Augmentation is allowed only for training data
+        self.augment = augment and split == "train"
 
         # Assign numerical labels to our classes
         self.class_labels = {
@@ -58,7 +68,14 @@ class DeepfakeImageDataset(Dataset):
         # Prepare the image
         image = preprocess_image(image_path)
 
-        # Convert it into a tensor
+        # Randomly mirror training images
+        if self.augment and random.random() < 0.5:
+
+            image = image.transpose(
+                Image.Transpose.FLIP_LEFT_RIGHT
+            )
+
+        # Convert the image into a tensor
         tensor = image_to_tensor(image)
 
         # Remove the extra batch dimension

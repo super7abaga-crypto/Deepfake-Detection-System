@@ -28,8 +28,14 @@ def train_model():
     device = torch.device("cpu")
 
     # Load the datasets
-    train_dataset = DeepfakeImageDataset(split="train")
-    validation_dataset = DeepfakeImageDataset(split="validation")
+    train_dataset = DeepfakeImageDataset(
+        split="train",
+        augment=True
+    )
+
+    validation_dataset = DeepfakeImageDataset(
+        split="validation"
+    )
 
     # Create data loaders
     train_loader = create_data_loader(
@@ -61,6 +67,11 @@ def train_model():
 
     # Where the best model will be saved
     model_path = Path(__file__).with_name("best_model.pth")
+
+    # Where the latest model will be saved
+    latest_model_path = Path(__file__).with_name(
+        "latest_model.pth"
+    )
 
     print("\nStarting image model training...\n")
 
@@ -163,29 +174,45 @@ def train_model():
 
         print("-" * 40)
 
-        # Save the best model
+        # Prepare the checkpoint
+        checkpoint = {
+            "epoch": epoch + 1,
+            "model_state_dict": model.state_dict(),
+            "validation_accuracy": validation_accuracy,
+            "class_labels": {
+                "real": 0,
+                "fake": 1
+            }
+        }
+
+        # Save the latest model after every epoch
+        torch.save(
+            checkpoint,
+            latest_model_path
+        )
+
+        # Save the best validation model
         if validation_accuracy > best_validation_accuracy:
 
             best_validation_accuracy = validation_accuracy
 
             torch.save(
-                {
-                    "epoch": epoch + 1,
-                    "model_state_dict": model.state_dict(),
-                    "validation_accuracy": validation_accuracy,
-                    "class_labels": {
-                        "real": 0,
-                        "fake": 1
-                    }
-                },
+                checkpoint,
                 model_path
             )
 
             print("Best model saved!")
 
+    # Display final training results
     print("\nTraining completed!")
-    print(f"Best validation accuracy: {best_validation_accuracy:.2f}%")
-    print(f"Model saved to: {model_path}")
+
+    print(
+        f"Best validation accuracy: "
+        f"{best_validation_accuracy:.2f}%"
+    )
+
+    print(f"Best model saved to: {model_path}")
+    print(f"Latest model saved to: {latest_model_path}")
 
 
 if __name__ == "__main__":
